@@ -4,32 +4,29 @@
 #include<stdlib.h>
 #include<string.h>
 typedef struct vector vector;
-typedef struct stack stack;
 struct vector{
     void* data; 
     size_t size; 
     size_t max_cap;
     size_t size_single;
-    void(*push_back)(vector*,void *);
-    void* (*get)(vector*,int);
-    void* (*front)(vector*); 
-    void* (*back)(vector*); 
-     
 };
+#define vec_push_back(v,val)\
+do{\
+    typeof(val)* t=(typeof(val)*)(malloc(sizeof(typeof(val))));\
+    *t=val;\
+    if(v->size==v->max_cap){\
+        void* resized = realloc(v->data, v->max_cap * 2 * v->size_single);\
+        if(resized == NULL){\
+            break;\
+        }\
+        v->data = resized;\
+        v->max_cap=v->max_cap*2; \
+    }\
+    memcpy((char *)v->data + v->size * v->size_single, (void*)t, v->size_single);\
+    v->size++;\
+}\
+while(0); 
 
-void push_back(vector* v,void* val){
-    if(v->size==v->max_cap){
-        void* resized = realloc(v->data, v->max_cap * 2 * v->size_single);
-        if(resized == NULL){
-            return;
-        }
-        v->data = resized;
-        v->max_cap=v->max_cap*2; 
-    }
-    memcpy((char *)v->data + v->size * v->size_single, val, v->size_single);
-    v->size++; 
-    return; 
-}
 void* get(vector* v,int index){
     if(index < 0 || (size_t)index >= v->size){return NULL;}
     void* ans=(void *)((char*)v->data+(v->size_single*index)); 
@@ -50,10 +47,6 @@ void* init(size_t size_single,size_t max_cap){
     v->size=0; 
     v->max_cap=max_cap;
     v->size_single=size_single; 
-    v->push_back=push_back; 
-    v->get=get;
-    v->front=front;
-    v->back=back;
     return (void *)v;
 }
 #endif 
