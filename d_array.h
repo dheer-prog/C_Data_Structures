@@ -10,7 +10,10 @@ struct vector{
     size_t max_cap;
     size_t size_single;
     void(*push_back)(vector*,void *);
-    void* (*get)(vector*,int); 
+    void* (*get)(vector*,int);
+    void* (*front)(vector*); 
+    void* (*back)(vector*); 
+     
 };
 
 void push_back(vector* v,void* val){
@@ -26,6 +29,12 @@ void* get(vector* v,int index){
     if(index>v->size){return NULL;}
     void* ans=(void *)((char*)v->data+(v->size_single*index)); 
     return ans; 
+}
+void* front(vector* v){
+    return v->data;
+}
+void* back(vector* v){
+    return (void *)((char*)v->data+(v->size_single*(v->size-1))); 
 }
 void* init(size_t size_single,size_t max_cap){
     if(max_cap==0){
