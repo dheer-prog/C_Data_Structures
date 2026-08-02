@@ -1,4 +1,4 @@
-#ifdef D_PTR
+#ifndef D_PTR
 #define D_PTR
 #include <stdint.h>
 #include "d_list.h"
@@ -11,29 +11,52 @@ uint64_t splitmix64(uint64_t x)
     x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
     return x ^ (x >> 31);
 }
-typedef struct umap umap; 
-struct umap{
-    list* arr[bucket_count]; 
-    int bucket_count=init_bucket_count;
-}
-static inline umap* umap_init(){
-    umap* u=(umap *)(malloc(sizeof(umap)));
-    u->bucket_count=init_bucket_count;   
-    for(int i=0;i<init_bucket_count;i++){
-        u->arr[i]=list_init(); 
-        vec_init(u->arr[i],20); 
-    }
-    return u; 
-}
-#define umap_insert_ptr(u,k,v) do{\
-    uint64_t hash=splitmix64((uintptr_t)k); \
-    int index=hash%u->bucket_count; 
-    insert_list()
-}while(0); \
+#define umap_create(type_k,type_v,pair_name,name) \
+typedef struct pair_name{\
+    type_k key;\
+    type_v val;\
+}pair_name;\
+\
+list_create(pair_name,name);\
+typedef struct umap{\
+    name* bucket[init_bucket_count];\
+    pair_name* pair_data_type;\
+    name* list_data_type;\
+    int bucket_count;\
+}umap; 
 
-static inline void* umap_get(umap* u,uintptr_t k){
-    uint64_t hash=splitmix64(ptr);
-    int index=hash%u->bucket_count; 
-}
+#define umap_init(ptr) do{\
+    ptr=(umap *)(malloc(sizeof(umap)));\
+    ptr->pair_data_type=(typeof(*(ptr->pair_data_type))*)NULL;\
+    ptr->list_data_type=(typeof(*(ptr->list_data_type))*)NULL;\
+    ptr->bucket_count=init_bucket_count;\
+    for(int i=0;i<ptr->bucket_count;i++){\
+        list_init(ptr->bucket[i]); \
+    }\
+}while(0); 
+
+#define umap_insert(u,k,v) \
+do{\
+    if(__builtin_types_compatible_p(typeof(k), typeof(int))){\
+        uint64_t h=splitmix64(k); \
+        int index=h%(u->bucket_count); \
+        typeof(*(u->pair_data_type)) t={k,v};\
+        insert_list(u->bucket[index],t);\
+    }\
+}while(0); 
+
+#define umap_get(u,k,v)\
+if(__builtin_types_compatible_p(typeof(k), typeof(int))){\
+    uint64_t h=splitmix64(k);\
+    int index=h%(u->bucket_count);\
+    typeof(*(u->list_data_type))* root=u->bucket[index];\
+    while((void*)root!=NULL){\
+        if(root->data.key==k){\
+            v=root->data.val;\
+            break;\
+        }\
+        root=root->next;\
+    }\
+}\
 
 #endif
