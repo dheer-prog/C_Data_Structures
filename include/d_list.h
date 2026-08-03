@@ -38,8 +38,15 @@ do{\
     }\
 }while(0);
 
+#define find_list(t,val,iter) \
+while(t!=NULL){\
+    if(t->data==val){iter==t;break;}\
+    t=t->next;\
+}
+
+
 #define erase_list(t) do{\
-    typedef typeof(*t) name\
+    typedef typeof(*t) name;\
     name* prev=t->prev;\
     name* next=t->next;\
     if(prev!=NULL){\
@@ -49,7 +56,7 @@ do{\
         next->prev=prev;\
     }\
     t->prev=NULL; \
-    t->next=NULL \
+    t->next=NULL; \
     free(t); \
 }while(0); 
  
