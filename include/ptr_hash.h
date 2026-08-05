@@ -23,7 +23,7 @@ typedef struct XCAT(name_map,__pair__){\
     }XCAT(name_map,__pair__);\
     list_create(XCAT(name_map,__pair__),XCAT(name_map,__list__));\
     typedef struct name_map{\
-        XCAT(name_map,__list__)* bucket[init_bucket_count];\
+        XCAT(name_map,__list__)** bucket;\
         XCAT(name_map,__pair__)* pair_data_type;\
         XCAT(name_map,__list__)* list_data_type;\
         int bucket_count;\
@@ -38,11 +38,41 @@ typedef struct XCAT(name_map,__pair__){\
     ptr->list_data_type=(typeof(*(ptr->list_data_type))*)NULL;\
     ptr->bucket_count=init_bucket_count;\
     ptr->elements=0;\
-    ptr->elements_threshold=(3/4)*(ptr->bucket_count);\
+    ptr->elements_threshold=10;\
+    ptr->bucket=(typeof(*(ptr->list_data_type))**)(malloc(sizeof(typeof(ptr->list_data_type))*init_bucket_count));\
     for(int i=0;i<ptr->bucket_count;i++){\
         list_init(ptr->bucket[i]);\
     }\
 }while(0); 
+
+#define map_rehash(u) do{\
+    typeof(*u)* ptr=u;\
+    printf("REhashing\n"); \
+    size_t old_count=u->bucket_count;\
+    u->bucket_count=u->bucket_count*2; \
+    typeof(*(ptr->list_data_type))** temp=(typeof(*(ptr->list_data_type))**)(malloc(sizeof(typeof(ptr->list_data_type))*u->bucket_count));\
+    for(size_t i=0;i<u->bucket_count;i++){\
+        list_init(temp[i]); \
+    }\
+    typeof(*(u->pair_data_type)) __finder_data_type__={0};\
+    typeof(__finder_data_type__.key) type_key={0}; \
+    typeof(__finder_data_type__.val) type_val={0};     \
+    for(size_t i=0;i<old_count;i++){\
+        typeof(*(u->list_data_type))* temp_root=u->bucket[i]; \
+        while(temp_root!=NULL){\
+            if (__builtin_types_compatible_p(typeof(temp_root->data.key), typeof(int))){\
+                uint64_t h=splitmix64(temp_root->data.key); \
+                int index=h%u->bucket_count;\
+                insert_list(temp[index],temp_root->data);\
+            }  \
+            temp_root=temp_root->next;\
+        }\
+    }\
+    typeof(*(ptr->list_data_type))** to_delete=u->bucket; \
+    u->bucket=temp; \
+    free(to_delete); \
+    u->elements_threshold=u->elements_threshold*2;\
+}while(0);
 
 #define umap_insert(u,k,v) \
 do{\
@@ -52,15 +82,15 @@ do{\
         typeof(*(u->pair_data_type)) __temp_inserter={k,v};\
         insert_list(u->bucket[index],__temp_inserter);\
         u->elements++;\
+        if(u->elements>=u->elements_threshold){\
+            map_rehash(u);\
+        }\
     }\
 }while(0); 
 
-// static inline re_hash(umap* u){
-//     printf("Rehasshing\n");
-//     umap* new_u; 
-//     umap_init(ptr); 
-// }
 
+  
+ 
 
 #define umap_size(u) u->elements
 

@@ -29,11 +29,10 @@ do{\
 }while(0); 
  
  
-#define front(ptr)\
-ptr[0]
+#define front(ptr) ptr[0]
 
-#define back(ptr)\
-*(ptr+ptr[-1]-1)
+#define back(ptr) ptr[ptr[-1]-1]
+
 
 #define vec_init(ptr,capacity)\
 do{\
