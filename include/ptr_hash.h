@@ -18,18 +18,18 @@ uint64_t splitmix64(uint64_t x)
 }
 #define umap_create(name_map,type_k,type_v) \
 typedef struct XCAT(name_map,__pair__){\
-        type_k key;\
-        type_v val;\
-    }XCAT(name_map,__pair__);\
-    list_create(XCAT(name_map,__pair__),XCAT(name_map,__list__));\
-    typedef struct name_map{\
-        XCAT(name_map,__list__)** bucket;\
-        XCAT(name_map,__pair__)* pair_data_type;\
-        XCAT(name_map,__list__)* list_data_type;\
-        int bucket_count;\
-        int elements;\
-        int elements_threshold;\
-    }name_map;\
+    type_k key;\
+    type_v val;\
+}XCAT(name_map,__pair__);\
+list_create(XCAT(name_map,__pair__),XCAT(name_map,__list__));\
+typedef struct name_map{\
+    XCAT(name_map,__list__)** bucket;\
+    XCAT(name_map,__pair__)* pair_data_type;\
+    XCAT(name_map,__list__)* list_data_type;\
+    int bucket_count;\
+    int elements;\
+    int elements_threshold;\
+}name_map;
 
 
 #define umap_init(ptr) do{\
@@ -88,10 +88,6 @@ do{\
     }\
 }while(0); 
 
-
-  
- 
-
 #define umap_size(u) u->elements
 
 #define umap_erase(u,k) \
@@ -131,4 +127,14 @@ do{\
     }\
     _result;\
 })
+#define uset_create(name_set,type_k) umap_create(name_set,type_k,unsigned char)
+#define uset_init(ptr) umap_init(ptr)
+#define uset_insert(u,k)({\
+    unsigned char __temp__t__=1;\
+    umap_insert(u,k,__temp__t__);\
+})
+
+#define uset_erase(u,k) umap_erase(u,k)
+#define uset_size(u) u->elements
+#define uset_get(u,k) umap_get(u,k)  
 #endif
