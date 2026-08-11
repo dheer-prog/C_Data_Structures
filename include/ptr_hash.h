@@ -4,9 +4,11 @@
 
 #include "d_list.h"
 #define init_bucket_count 20
-
+#ifndef CAT_FUNC
+#define CAT_FUNC
 #define CAT(a,b) a##b
 #define XCAT(a,b) CAT(a,b)
+#endif
 
 //The hash function being used
 uint64_t splitmix64(uint64_t x)
