@@ -46,9 +46,13 @@ typedef unsigned char uchar;
     x->parent=y;\
 }while(0); 
 
-#define rb_tree_create(name_rb,data_type) do{\
+#define rb_tree_create(name_rb,type_k,type_v) do{\
+typedef struct XCAT(name_map,__pair__){\
+    type_k key;\
+    type_v val;\
+}XCAT(name_rb,__pair__);\
 typedef struct name_rb{\
-    typeof(data_type) data;\
+    XCAT(name_rb,__pair__);\
     rb_tree* left; \
     rb_tree* right; \
     rb_tree* parent;\
@@ -106,7 +110,7 @@ typedef struct name_rb{\
     ptr->root->color=1;\
 }while(0);
 
-#define __bst__insert(ptr,val)do{\
+#define __bst__insert(ptr,val,val_val)do{\
     if(ptr->init==0){ptr->data=0;ptr->init=1;break;}\
     typeof(*ptr)* curr=ptr; 
     typeof(*ptr)* prev_ptr=NULL;\
@@ -120,6 +124,8 @@ typedef struct name_rb{\
         }\
     }\
     typeof(*ptr)* __temp_new__=(typeof(*ptr)*)(malloc(sizeof(typeof(*ptr))));\
+    //Placing a lot of trust in the user LOL; 
+    __temp_new__->data={val,val_val};\ 
     __temp_new__->data=val;\
     __temp_new__->init=1;  \
     __temp_new__->parent=prev_ptr;\
@@ -135,6 +141,19 @@ typedef struct name_rb{\
 }while(0);
 
 
+//Note this returns an iterator like C++ std::map .find() function
+//TODO: Make this change in ptr_hash.h also
+#define map_get(ptr,val) ({
+    typeof(*ptr)* __result__=ptr->root;
+    while(__result__->data!=val){
+        if(__result__->data<val){
+            __result__=__result__->right;
+        }
+        else{
+            __result__=__result__->left; 
+        }
+    }
+    __result__;\
+})
 
- 
 #endif 
