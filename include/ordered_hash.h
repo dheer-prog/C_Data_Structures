@@ -6,6 +6,8 @@
 #define XCAT(a,b) CAT(a,b)
 #endif 
 
+#define typeof(*ptr) map_type
+
 typedef unsigned char uchar;
 #define left_rotate(x) do{\
     typeof(*x)* y=x; \
@@ -64,7 +66,7 @@ typedef struct name_rb{\
 create_ptr_checker();})\
  
 #define rb_init(ptr)do{\
-    ptr=(typeof(*ptr)*)(malloc(sizeof(typeof(*ptr)))); 
+    ptr=(map_type*)(malloc(sizeof(map_type))); 
     ptr->data={0};
     ptr->left=NULL; 
     ptr->right=NULL; 
@@ -79,13 +81,13 @@ create_ptr_checker();})\
 
 #define __r_b_property__(ptr)do{\
     if(ptr->parent->color==1){break;}\
-    typeof(*ptr)* _X_=ptr;\
+    map_type* _X_=ptr;\
    \
     while(g!=NULL){\
-        typeof(*ptr)* p=_X_->parent;\
-        typeof(*ptr)* g=p->parent;\
+        map_type* p=_X_->parent;\
+        map_type* g=p->parent;\
         if(g==NULL){break;}\
-        typeof(*ptr)* u=p->left; \
+        map_type* u=p->left; \
         if(u==NULL || u->color==1){\
             if(p->left==_X_ && g->left==p){\
                 left_rotate(g);\
@@ -115,7 +117,7 @@ create_ptr_checker();})\
 //Note this returns an iterator like C++ std::map .find() function
 //TODO: Make this change in ptr_hash.h also
 #define map_get(ptr,val) ({
-    typeof(*ptr)* __result__=ptr->root;
+    map_type* __result__=ptr->root;
     while(__result__!=NULL && __result__->data!=val){
         if(__result__->data.key<val){
             __result__=__result__->right;
@@ -128,14 +130,14 @@ create_ptr_checker();})\
 })
 
 #define __bst__insert(ptr,val,val_val)do{\
-    typeof(*ptr)* __finder_iter__=map_get(ptr,val);\
+    map_type* __finder_iter__=map_get(ptr,val);\
     if(ptr!=NULL){\
         ptr->count++;\
         break;\
     }\
     if(ptr->init==0){ptr->data=0;ptr->init=1;break;}\
-    typeof(*ptr)* curr=ptr; 
-    typeof(*ptr)* prev_ptr=NULL;\
+    map_type* curr=ptr; 
+    map_type* prev_ptr=NULL;\
     while(curr!=NULL){\
         prev_ptr=curr; \
         if(curr->data.key>=val){\
@@ -145,7 +147,7 @@ create_ptr_checker();})\
             curr=curr->right; \
         }\
     }\
-    typeof(*ptr)* __temp_new__=(typeof(*ptr)*)(malloc(sizeof(typeof(*ptr))));\
+    map_type* __temp_new__=(map_type*)(malloc(sizeof(map_type)));\
     //Placing a lot of trust in the user LOL; 
     __temp_new__->data={val,val_val};\
     __temp_new__->init=1;  \
@@ -160,13 +162,47 @@ create_ptr_checker();})\
     __temp_new__->root=prev_ptr->root;\
     __r_b_property__(__temp_new__);\
 }while(0);
+#define get_right_min(ptr) ({
+    map_type* returner=ptr; 
+    while(returner->right!=NULL){
+        returner=returner->right; 
+    }
+    returner;
+})
+#define bst_erase(ptr,val) do{
+    uchar is_black=0; 
+    if(__builtin_types_compatible_p(typeof(ptr), typeof(val))){
 
-//TODO Currently this can only take in a value and fix something 
-//I want to give the user's an option to send an ptr or a value 
-//but using the same function so I need someway to check whether 
-//val is a ptr or a actual value of sometype 
-#define bst_erase(val) do{
-
+    } 
+    else{
+        _Static_assert(__builtin_types_compatible_p(map_type, typeof(val)),"WRONG DATA TYPE");\
+        map_type* must_delete=map_get(ptr,val);\
+        is_black=must_delete->color; 
+        if(must_delete->left==NULL){
+            if(must_delete->parent->left==must_delete){
+                must_delete->parent->left=must_delete->right;
+            }
+            else{
+                must_delete->parent->right=must_delete->right;
+            }
+            must_delete->right->parent=must_delete->parent; 
+            free(must_delete);
+            break;
+        }
+        else if(must_delete->right==NULL){
+            if(must_delete->parent->left==must_delete){
+                must_delete->parent->left=must_delete->left;
+            }
+            else{
+                must_delete->parent->right=must_delete->left;
+            }
+            must_delete->left->parent=must_delete->parent; 
+            free(must_delete); 
+            break; 
+        }
+        //TODO 
+        //NEED TO ADD while loop for bst erase
+    }
 }while(0); 
 
 #endif 
